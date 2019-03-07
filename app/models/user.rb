@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_secure_password
   
   has_many :microposts
+  
   has_many :relationships
   has_many :followings, through: :relationships, source: :follow
   has_many :reverses_of_relationships, class_name: 'Relationship', foreign_key: 'follow_id'
@@ -29,5 +30,21 @@ class User < ApplicationRecord
   
   def feed_microposts
     Micropost.where(user_id: self.following_ids + [self.id])
+  end
+  
+  has_many :favorit_microposts
+  has_many :fav_microposts, through: :favorit_microposts, source: :micropost
+  
+  def like(micropost)
+    self.favorit_microposts.find_or_create_by(micropost_id: micropost.id)
+  end
+  
+  def unlike(micropost)
+    favorit_micropost = self.favorit_microposts.find_by(micropost_id: micropost.id)
+    favorit_micropost.destroy if favorit_micropost
+  end
+  
+  def like?(micropost)
+    self.fav_microposts.include?(micropost)
   end
 end
